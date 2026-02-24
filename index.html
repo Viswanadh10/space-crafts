@@ -3,23 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Surveillance Radar System - Final</title>
+    <title>ISRO STS Launch Command</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
         :root {
-            --cyan: #00f0ff;
-            --green: #00ff41;
-            --red: #ff2a2a;
-            --orange: #ffaa00;
-            --bg-dark: #02060d;
-            --sidebar-bg: #050c17;
-            --border-col: rgba(0, 240, 255, 0.2);
+            --cyan: #00f0ff; --green: #00ff41; --red: #ff2a2a;
+            --orange: #ffaa00; --purple: #b300ff; --bg-dark: #02060d;
+            --sidebar-bg: #050c17; --border-col: rgba(0, 240, 255, 0.2);
             --text-muted: #6a8caf;
         }
 
@@ -27,538 +24,555 @@
 
         body, html {
             margin: 0; padding: 0; width: 100vw; height: 100vh;
-            background-color: var(--bg-dark);
-            font-family: 'Share Tech Mono', monospace;
-            color: var(--cyan);
-            display: flex; overflow: hidden; user-select: none;
+            background-color: var(--bg-dark); font-family: 'Share Tech Mono', monospace;
+            color: var(--cyan); display: flex; overflow: hidden; user-select: none;
         }
 
-        /* HARD-LOCKED SIDEBAR */
         #sidebar {
-            width: 380px; min-width: 380px; height: 100vh;
-            background: var(--sidebar-bg); border-right: 1px solid var(--cyan);
-            display: flex; flex-direction: column; z-index: 100;
-            box-shadow: 5px 0 20px rgba(0,0,0,0.8);
+            width: 380px; min-width: 380px; height: 100vh; background: var(--sidebar-bg); 
+            border-right: 1px solid var(--cyan); display: flex; flex-direction: column; 
+            z-index: 100; box-shadow: 5px 0 20px rgba(0,0,0,0.8);
         }
 
         .sidebar-header {
             padding: 20px; text-align: center; border-bottom: 1px solid var(--border-col);
             font-size: 20px; font-weight: bold; letter-spacing: 2px;
-            background: rgba(0, 240, 255, 0.1);
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5); color: #fff;
+            background: rgba(0, 240, 255, 0.05); text-shadow: 0 0 10px rgba(0, 240, 255, 0.5); color: #fff;
         }
 
         .panel-section { padding: 20px; border-bottom: 1px solid var(--border-col); }
         .section-title { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; letter-spacing: 1px; font-weight: bold;}
         .section-title::before { content: '► '; color: var(--cyan); }
 
-        /* Sliders */
         .control-row { margin-bottom: 15px; }
         .control-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; color: #fff; }
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--cyan); cursor: pointer; margin-top: -5px; box-shadow: 0 0 8px var(--cyan); border: 2px solid #000; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: rgba(0, 240, 255, 0.3); border-radius: 2px; }
 
-        /* Buttons */
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        button {
-            background: rgba(0, 240, 255, 0.05); color: var(--cyan); border: 1px solid var(--cyan);
-            padding: 12px; font-family: inherit; font-size: 12px; cursor: pointer;
-            transition: 0.2s; border-radius: 3px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;
-        }
+        .btn-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px; }
+        button { background: rgba(0, 240, 255, 0.05); color: var(--cyan); border: 1px solid var(--cyan); padding: 12px; font-family: inherit; font-size: 14px; cursor: pointer; transition: 0.2s; border-radius: 3px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
         button:hover { background: rgba(0, 240, 255, 0.2); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
-        .btn-alert { color: var(--red); border-color: var(--red); width: 100%; margin-top: 15px; font-size: 14px; background: rgba(255, 42, 42, 0.05);}
-        .btn-alert:hover { background: rgba(255, 42, 42, 0.2); box-shadow: 0 0 15px rgba(255, 42, 42, 0.3); }
 
-        /* Telemetry Data */
         .data-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: var(--text-muted); border-bottom: 1px dotted rgba(0,240,255,0.1); padding-bottom: 5px;}
         .data-val { color: #fff; font-weight: bold; font-size: 15px; text-shadow: 0 0 5px rgba(255,255,255,0.3); text-align: right;}
-        .data-trend { font-size: 10px; margin-left: 5px; opacity: 0.7;}
 
-        /* MAIN CONTENT AREA */
         #main-content { flex: 1; position: relative; height: 100vh; background: #000; }
 
-        /* Top Navigation */
         #top-nav {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 10px; z-index: 50;
-            background: rgba(5, 12, 23, 0.9); padding: 5px; border-radius: 4px; border: 1px solid var(--border-col);
-            backdrop-filter: blur(5px);
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 50;
+            background: rgba(5, 12, 23, 0.9); padding: 5px; border-radius: 4px; border: 1px solid var(--border-col); backdrop-filter: blur(5px);
         }
-        .nav-btn { border: 1px solid transparent; color: var(--text-muted); padding: 10px 20px; background: transparent; }
+        .nav-btn { border: 1px solid transparent; color: var(--text-muted); padding: 10px 20px; background: transparent; font-size: 13px; cursor: pointer; }
         .nav-btn:hover { background: rgba(0, 240, 255, 0.1); }
         .nav-btn.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 240, 255, 0.15); box-shadow: 0 0 10px rgba(0, 240, 255, 0.2) inset; }
 
-        /* View Containers */
         .view-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
         .view-container.active { display: block; }
+        #launch-canvas { width: 100%; height: 100%; display: block; background: #000; cursor: move; }
 
-        /* Canvas Elements */
-        #three-canvas { width: 100%; height: 100%; display: block; background: #000; cursor: move; }
-        #radar-canvas { width: 100%; height: 100%; display: block; background: radial-gradient(circle at center, #020813 0%, #000000 100%); }
-
-        /* Charts Grid */
-        #plots-view { padding: 80px 20px 20px 20px; background: var(--bg-dark); }
-        .charts-grid {
-            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
-            gap: 20px; height: 100%; width: 100%;
-        }
-        .chart-box { background: rgba(5, 12, 23, 0.8); border: 1px solid var(--border-col); border-radius: 4px; padding: 15px; position: relative; display: flex; flex-direction: column; }
+        .plots-view { padding: 80px 20px 20px 20px; background: var(--bg-dark); }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; height: 100%; width: 100%; }
+        .chart-box { background: rgba(5, 12, 23, 0.8); border: 1px solid var(--border-col); border-radius: 4px; padding: 15px; position: relative; display: flex; flex-direction: column; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
         .chart-wrapper { position: relative; flex-grow: 1; width: 100%; height: 100%; }
         canvas { width: 100%; height: 100%; }
 
-        /* Legend overlay for 3D */
-        .overlay-legend { position: absolute; bottom: 20px; right: 20px; background: rgba(5, 12, 23, 0.9); border: 1px solid var(--cyan); padding: 15px; font-size: 12px; z-index: 10; border-radius: 4px; box-shadow: 0 0 10px rgba(0,240,255,0.2); pointer-events: none;}
-        .mouse-hint { position: absolute; top: 80px; right: 20px; color: rgba(255,255,255,0.5); font-size: 11px; z-index: 10; pointer-events: none;}
+        .overlay-legend { position: absolute; bottom: 20px; right: 20px; background: rgba(5, 12, 23, 0.9); border: 1px solid var(--cyan); padding: 15px; font-size: 12px; z-index: 10; border-radius: 4px; box-shadow: 0 0 10px rgba(0,240,255,0.2); pointer-events: none; line-height: 1.8;}
+        .mouse-hint { position: absolute; top: 80px; right: 20px; color: rgba(255,255,255,0.8); font-size: 11px; z-index: 10; pointer-events: none; text-shadow: 0 0 5px #000;}
+
+        .launch-hud { position: absolute; top: 100px; left: 30px; background: rgba(5, 12, 23, 0.85); border: 1px solid var(--orange); padding: 20px; border-radius: 8px; width: 340px; z-index: 10; backdrop-filter: blur(8px); box-shadow: 0 0 30px rgba(255, 170, 0, 0.15); }
+        .launch-hud h3 { color: var(--orange); margin: 0 0 15px 0; border-bottom: 1px solid var(--orange); padding-bottom: 5px; letter-spacing: 2px;}
     </style>
 </head>
 <body>
 
     <aside id="sidebar">
-        <div class="sidebar-header"> ORBITAL COMMAND</div>
+        <div class="sidebar-header"> STS LAUNCH COMMAND</div>
         
         <div class="panel-section">
-            <div class="section-title">MISSION PARAMETERS</div>
-            <div class="control-row">
-                <div class="control-label"><span>RADAR FREQ (GHz)</span><span id="lbl-freq" style="color:var(--cyan)">10.0</span></div>
-                <input type="range" id="inp-freq" min="1" max="20" step="0.1" value="10.0">
-            </div>
-            <div class="control-row">
-                <div class="control-label"><span>PRIMARY ALT (km)</span><span id="lbl-alt1" style="color:var(--cyan)">500</span></div>
-                <input type="range" id="inp-alt1" min="300" max="2000" step="10" value="500">
-            </div>
-            <div class="control-row">
-                <div class="control-label"><span>TARGET ALT (km)</span><span id="lbl-alt2" style="color:var(--red)">480</span></div>
-                <input type="range" id="inp-alt2" min="300" max="2000" step="10" value="480">
-            </div>
-            <div class="control-row">
-                <div class="control-label"><span>PHASE OFFSET (°)</span><span id="lbl-offset">45</span></div>
-                <input type="range" id="inp-offset" min="0" max="360" step="1" value="45">
-            </div>
+            <div class="section-title">TRACKING RADAR PARAMETERS</div>
+            <div class="control-row"><div class="control-label"><span>STATION FREQ (GHz)</span><span id="lbl-freq" style="color:var(--cyan)">10.0</span></div><input type="range" id="inp-freq" min="1" max="20" step="0.1" value="10.0"></div>
             <div class="btn-grid">
-                <button onclick="resetScenario()">RESET SCENARIO</button>
-                <button onclick="simulateIntercept()" style="border-color: var(--red); color: var(--red); background: rgba(255, 42, 42, 0.1);">FORCE INTERCEPT</button>
+                <button onclick="triggerLaunch()" style="background: rgba(0, 255, 65, 0.1); border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(0,255,65,0.2);">INITIATE LAUNCH SEQUENCE</button>
+                <button onclick="resetLaunch()" style="background: transparent; border-color: #555; color: #888;">ABORT / RESET PAD</button>
             </div>
         </div>
 
         <div class="panel-section" style="flex-grow: 1;">
-            <div class="section-title">PRECISION TELEMETRY</div>
-            <div class="data-row">
-                <span>TARGET RANGE</span>
-                <div><span class="data-val" id="out-range" style="color:var(--red)">0.00</span> <span style="font-size:11px">km</span></div>
-            </div>
-            <div class="data-row">
-                <span>RADIAL VELOCITY</span>
-                <div>
-                    <span class="data-val" id="out-vel" style="color:var(--green)">0.00</span> <span style="font-size:11px">m/s</span>
-                    <div id="trend-vel" class="data-trend">(CLOSING)</div>
-                </div>
-            </div>
-            <div class="data-row">
-                <span>DOPPLER SHIFT</span>
-                <div>
-                    <span class="data-val" id="out-doppler" style="color:var(--cyan)">0.00</span> <span style="font-size:11px">Hz</span>
-                    <div id="trend-dop" class="data-trend">(APPROACHING)</div>
-                </div>
-            </div>
-            <div class="data-row">
-                <span>REL. ACCELERATION</span>
-                <div><span class="data-val" id="out-accel" style="color:var(--orange)">0.0000</span> <span style="font-size:11px">m/s²</span></div>
-            </div>
-
-            <div class="data-row" style="margin-top: 25px; border:none; justify-content: center;"><span>EST. TIME TO COLLISION</span></div>
-            <div style="text-align: center; font-size: 28px; font-weight: bold; color: #fff; margin-bottom: 25px; text-shadow: 0 0 10px rgba(255,255,255,0.5);" id="out-ttc">N/A</div>
-            
-            <button id="status-indicator" class="btn-alert" style="color:var(--green); border-color:var(--green);">SYSTEM STATUS: NOMINAL</button>
+            <div class="section-title">GROUND RADAR TELEMETRY</div>
+            <div class="data-row"><span>SLANT RANGE</span><div><span class="data-val" id="l-range" style="color:var(--purple)">0.00</span> <span style="font-size:11px">km</span></div></div>
+            <div class="data-row"><span>RADIAL VELOCITY</span><div><span class="data-val" id="l-radvel" style="color:var(--green)">0.00</span> <span style="font-size:11px">m/s</span></div></div>
+            <div class="data-row"><span>DOPPLER SHIFT</span><div><span class="data-val" id="l-doppler" style="color:var(--cyan)">0.00</span> <span style="font-size:11px">Hz</span></div></div>
+            <div class="data-row"><span>PATH DEVIATION</span><div><span class="data-val" id="l-dev" style="color:var(--green)">0.00</span> <span style="font-size:11px">%</span></div></div>
         </div>
     </aside>
 
     <main id="main-content">
         <div id="top-nav">
-            <button class="nav-btn active" onclick="switchView('3d', this)">3D ORBIT ENGINE</button>
-            <button class="nav-btn" onclick="switchView('radar', this)">TACTICAL RADAR</button>
-            <button class="nav-btn" onclick="switchView('plots', this)">PRECISION PLOTS</button>
+            <button class="nav-btn active" onclick="switchView('launch', this)">3D FLIGHT TRACKER</button>
+            <button class="nav-btn" onclick="switchView('plots', this)">TRAJECTORY PLOTS</button>
         </div>
 
-        <div id="view-3d" class="view-container active">
-            <div id="three-canvas"></div>
-            <div class="mouse-hint">[ Can be viewed 360 degrees ]</div>
+        <div id="view-launch" class="view-container active">
+            <div id="launch-canvas"></div>
+            <div class="mouse-hint">[ MOUSE: DRAG TO ROTATE CAMERA | SCROLL TO ZOOM ]</div>
+            
             <div class="overlay-legend">
-                <span style="color:var(--cyan); font-weight:bold;">■ PRIMARY ASSET (LEO)</span><br>
-                <span style="color:var(--red); font-weight:bold;">■ UNKNOWN TARGET</span><br>
-                <span style="color:rgba(0,240,255,0.5)">---------- ORBITAL TRAJECTORIES</span>
+                <span style="color:rgba(0,240,255,0.6); font-weight:bold;">--- PREDICTED GRAVITY TURN</span><br>
+                <span style="color:var(--orange); font-weight:bold;">--- LIVE FLIGHT PATH</span><br>
+                <span style="color:var(--purple); font-weight:bold;">▲ GROUND RADAR STATION</span>
+            </div>
+
+            <div class="launch-hud">
+                <h3>ONBOARD TELEMETRY</h3>
+                <div class="data-row"><span>EVENT PHASE</span><span class="data-val" id="l-phase" style="color:#fff">T-MINUS 00:00:00</span></div>
+                <div class="data-row"><span>ALTITUDE</span><span class="data-val" id="l-alt" style="color:var(--cyan)">0.00 km</span></div>
+                <div class="data-row"><span>DOWNRANGE</span><span class="data-val" id="l-downrange" style="color:var(--purple)">0.00 km</span></div>
+                <div class="data-row"><span>VELOCITY</span><span class="data-val" id="l-vel" style="color:var(--green)">0.00 m/s</span></div>
+                <div class="data-row"><span>PITCH ANGLE</span><span class="data-val" id="l-pitch" style="color:var(--orange)">90.0 °</span></div>
+                <div class="data-row"><span>DYNAMIC PRESSURE (Q)</span><span class="data-val" id="l-q" style="color:var(--red)">0.00 kPa</span></div>
             </div>
         </div>
 
-        <div id="view-radar" class="view-container">
-            <canvas id="radar-canvas"></canvas>
-        </div>
-
-        <div id="view-plots" class="view-container">
+        <div id="view-plots" class="view-container plots-view">
             <div class="charts-grid">
-                <div class="chart-box"><div class="chart-wrapper"><canvas id="chart-doppler"></canvas></div></div>
-                <div class="chart-box"><div class="chart-wrapper"><canvas id="chart-vel"></canvas></div></div>
-                <div class="chart-box"><div class="chart-wrapper"><canvas id="chart-accel"></canvas></div></div>
-                <div class="chart-box"><div class="chart-wrapper"><canvas id="chart-dist"></canvas></div></div>
+                <div class="chart-box"><div class="chart-wrapper"><canvas id="l-chart-doppler"></canvas></div></div>
+                <div class="chart-box"><div class="chart-wrapper"><canvas id="l-chart-vel"></canvas></div></div>
+                <div class="chart-box"><div class="chart-wrapper"><canvas id="l-chart-alt"></canvas></div></div>
+                <div class="chart-box"><div class="chart-wrapper"><canvas id="l-chart-pitch"></canvas></div></div>
             </div>
         </div>
     </main>
 
     <script>
         // ==================================================================
-        // 1. UI NAVIGATION (FIXED CANVAS SCALING BUG)
+        // 1. UI SETUP & PHYSICS PARAMETERS
         // ==================================================================
+        const c_speed = 3e8; 
+        const EARTH_RADIUS = 6371; // km
+        let launchParams = { f0: 10e9 }; 
+
+        document.getElementById('inp-freq').addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            document.getElementById('lbl-freq').innerText = val.toFixed(1);
+            launchParams.f0 = val * 1e9;
+        });
+
         function switchView(viewId, btn) {
             document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-' + viewId).classList.add('active');
-            btn.classList.add('active');
-
-            // FIX: Force Canvases to resize immediately when they become visible
-            if (viewId === 'radar') {
-                let cvs = document.getElementById('radar-canvas');
-                let cont = document.getElementById('view-radar');
-                cvs.width = cont.clientWidth;
-                cvs.height = cont.clientHeight;
-            }
-            if (viewId === 'plots') {
-                // Force Chart.js to recalculate its bounds
-                if (charts.dop) {
-                    Object.values(charts).forEach(c => c.resize());
-                }
-            }
+            document.getElementById('view-' + viewId).classList.add('active'); btn.classList.add('active');
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+                if (viewId === 'plots') Object.values(lCharts).forEach(chart => chart.update());
+            }, 50);
         }
 
         // ==================================================================
-        // 2. ISRO PRECISION PHYSICS ENGINE
+        // 2. HIGH-RES PROCEDURAL SHUTTLE FALLBACK
         // ==================================================================
-        const R_E = 6371;             
-        const mu = 3.986e14;          
-        const c = 3e8;                
-
-        let sys = {
-            f0: 10e9, alt1: 500, alt2: 480, offsetDeg: 45,
-            angle1: 0, angle2: 45 * (Math.PI/180),
-            prevVel: 0, lastTime: Date.now(), timeScale: 200
-        };
-
-        const binds = [
-            { id: 'freq', key: 'f0', mult: 1e9, dec: 1 },
-            { id: 'alt1', key: 'alt1', mult: 1, dec: 0 },
-            { id: 'alt2', key: 'alt2', mult: 1, dec: 0 },
-            { id: 'offset', key: 'offsetDeg', mult: 1, dec: 0 }
-        ];
-
-        binds.forEach(b => {
-            const el = document.getElementById('inp-' + b.id);
-            el.addEventListener('input', (e) => {
-                let val = parseFloat(e.target.value);
-                document.getElementById('lbl-' + b.id).innerText = val.toFixed(b.dec);
-                sys[b.key] = val * b.mult;
-                if(b.id === 'offset') {
-                    sys.angle2 = sys.angle1 + (val * (Math.PI/180));
-                    clearCharts();
-                }
-                if(b.id === 'alt1' || b.id === 'alt2') updateOrbitLines();
-            });
-        });
-
-        function resetScenario() {
-            document.getElementById('inp-offset').value = 45;
-            document.getElementById('lbl-offset').innerText = '45';
-            sys.offsetDeg = 45; sys.angle1 = 0; sys.angle2 = 45 * (Math.PI/180);
-            clearCharts(); updateOrbitLines();
-        }
-
-        function simulateIntercept() { sys.angle2 = sys.angle1 + 0.08; } 
-
-        function calcPhysics() {
-            let now = Date.now();
-            let realDt = (now - sys.lastTime) * 0.001;
-            let dt = realDt * sys.timeScale;           
-            sys.lastTime = now;
-
-            if(realDt <= 0.0001) return; 
-
-            let r1 = (R_E + sys.alt1) * 1000;
-            let r2 = (R_E + sys.alt2) * 1000;
-            let w1 = Math.sqrt(mu / Math.pow(r1, 3));
-            let w2 = Math.sqrt(mu / Math.pow(r2, 3));
-            let v1 = Math.sqrt(mu / r1);
-            let v2 = Math.sqrt(mu / r2);
-
-            sys.angle1 += w1 * dt;
-            sys.angle2 += w2 * dt;
-
-            let x1 = r1 * Math.cos(sys.angle1), y1 = r1 * Math.sin(sys.angle1);
-            let x2 = r2 * Math.cos(sys.angle2), y2 = r2 * Math.sin(sys.angle2);
-            let dx = x2 - x1, dy = y2 - y1;
-            let distMeters = Math.sqrt(dx*dx + dy*dy);
-
-            let vx1 = -v1 * Math.sin(sys.angle1), vy1 = v1 * Math.cos(sys.angle1);
-            let vx2 = -v2 * Math.sin(sys.angle2), vy2 = v2 * Math.cos(sys.angle2);
+        function buildDetailedShuttle() {
+            const stack = new THREE.Group();
             
-            let radialVel = ((dx * (vx2 - vx1)) + (dy * (vy2 - vy1))) / distMeters;
-            let accel = (radialVel - sys.prevVel) / realDt;
-            sys.prevVel = radialVel;
+            const matFoam = new THREE.MeshStandardMaterial({color: 0xc45508, roughness: 1.0});
+            const matWhite = new THREE.MeshStandardMaterial({color: 0xffffff, roughness: 0.3});
+            const matBlack = new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.8});
 
-            let doppler = (-2 * radialVel * sys.f0) / c;
-
-            document.getElementById('out-range').innerText = (distMeters / 1000).toFixed(2);
-            document.getElementById('out-vel').innerText = radialVel.toFixed(2);
-            document.getElementById('out-accel').innerText = accel.toFixed(4);
-            document.getElementById('out-doppler').innerText = doppler.toFixed(2);
-
-            document.getElementById('trend-vel').innerText = radialVel < 0 ? "(CLOSING)" : "(RECEDING)";
-            document.getElementById('trend-vel').style.color = radialVel < 0 ? "var(--red)" : "var(--green)";
-            document.getElementById('trend-dop').innerText = doppler > 0 ? "(APPROACHING)" : "(RECEDING)";
-            document.getElementById('trend-dop').style.color = doppler > 0 ? "var(--cyan)" : "var(--text-muted)";
-
-            let stat = document.getElementById('status-indicator');
-            let ttcEl = document.getElementById('out-ttc');
-
-            if(distMeters < 100000) { 
-                stat.innerText = "⚠ COLLISION WARNING";
-                stat.style.color = "var(--red)"; stat.style.borderColor = "var(--red)"; stat.style.background = "rgba(255,42,42,0.1)";
-                
-                if(radialVel < -10) { 
-                     let ttc = distMeters / Math.abs(radialVel);
-                     ttcEl.innerText = ttc.toFixed(0) + ' s';
-                     ttcEl.style.color = "var(--red)";
-                } else {
-                     ttcEl.innerText = "PROXIMITY ALERT"; ttcEl.style.color = "var(--orange)";
-                }
-            } else {
-                stat.innerText = "✔ SYSTEM STATUS: NOMINAL";
-                stat.style.color = "var(--green)"; stat.style.borderColor = "var(--green)"; stat.style.background = "rgba(0,255,65,0.05)";
-                ttcEl.innerText = radialVel >= 0 ? "DIVERGING" : "SAFE";
-                ttcEl.style.color = "#fff";
-            }
-
-            update3D(r1, r2);
+            const et = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 8, 32), matFoam); et.position.y = 4;
+            const etNose = new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 16, 0, Math.PI*2, 0, Math.PI/2), matFoam); etNose.position.y = 8;
+            stack.add(et, etNose);
             
-            // Plot Update Wrapper
-            try {
-                updateCharts(distMeters/1000, doppler, radialVel, accel);
-            } catch (e) {
-                // Failsafe catch to prevent physics engine crash if charts are hidden
+            const srbGeo = new THREE.CylinderGeometry(0.3, 0.3, 6, 32);
+            const srbL = new THREE.Group(); const srbR = new THREE.Group();
+            srbL.position.set(-1.2, 3, 0); srbR.position.set(1.2, 3, 0);
+            
+            const srbBody = new THREE.Mesh(srbGeo, matWhite);
+            const srbNose = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.8, 32), matWhite); srbNose.position.y = 3.4;
+            srbL.add(srbBody.clone(), srbNose.clone()); srbR.add(srbBody, srbNose);
+            stack.add(srbL, srbR);
+
+            const orbiter = new THREE.Group();
+            const fuseTop = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 5, 32), matWhite); fuseTop.scale.set(1, 1, 0.7);
+            const fuseBottom = new THREE.Mesh(new THREE.CylinderGeometry(0.71, 0.71, 5, 32), matBlack); fuseBottom.scale.set(1, 0.98, 0.7); fuseBottom.position.z = -0.05;
+            
+            const wing = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 2.5), matWhite); wing.position.set(0, 0.5, 0.9); wing.rotation.x = Math.PI/2;
+            const wingEdge = new THREE.Mesh(new THREE.BoxGeometry(4.05, 0.15, 0.3), matBlack); wingEdge.position.set(0, -0.5, 0.9); wingEdge.rotation.x = Math.PI/2;
+            const tail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2, 1.5), matWhite); tail.position.set(0, 3.5, 1.4); tail.rotation.y = Math.PI/2; tail.rotation.z = -0.3;
+
+            orbiter.add(fuseTop, fuseBottom, wing, wingEdge, tail); 
+            orbiter.position.set(0, 2.5, 1.4);
+            stack.add(orbiter);
+
+            stack.traverse((child) => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
+            stack.userData = { srbL: srbL, srbR: srbR, hasProcedural: true };
+            return stack;
+        }
+
+        // ==================================================================
+        // 3. CURVED EARTH LAUNCH ENGINE & TRAJECTORY PHYSICS
+        // ==================================================================
+        let lScene, lCamera, lRenderer, lControls, launchStack, earthSphere;
+        let exhaustSRB, exhaustSSME, groundRadar, engineLight, starField;
+        let launchTrailGeo, launchTrailPts = [];
+        let optimalTrailGeo;
+        
+        let lState = { active: false, alt: 0, downrange: 0, vel: 0, velX:0, velY:0, pitch: Math.PI/2, time: 0, lastTime: Date.now(), dynQ: 0 };
+
+        function createExhaust(color, size, count) {
+            let pGeo = new THREE.BufferGeometry(); let pPos = new Float32Array(count * 3); pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            let pMat = new THREE.PointsMaterial({color: color, size: size, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false});
+            return new THREE.Points(pGeo, pMat);
+        }
+
+        function createStars() {
+            const starGeo = new THREE.BufferGeometry();
+            const starPts = [];
+            for(let i=0; i<4000; i++) {
+                let x = THREE.MathUtils.randFloatSpread(20000);
+                let y = THREE.MathUtils.randFloatSpread(20000); 
+                let z = THREE.MathUtils.randFloatSpread(20000);
+                // Keep stars away from the center
+                if(Math.sqrt(x*x + y*y + z*z) > EARTH_RADIUS + 500) {
+                    starPts.push(x, y, z);
+                }
             }
-        }
-        setInterval(calcPhysics, 50);
-
-        // ==================================================================
-        // 3. PERFECT 3D ENGINE (UNCHANGED)
-        // ==================================================================
-        let scene, camera, renderer, controls, earthGrp, sat1, sat2, orbitLine1, orbitLine2;
-
-        function buildSat(col) {
-            let grp = new THREE.Group();
-            grp.add(new THREE.Mesh(new THREE.BoxGeometry(0.08,0.08,0.08), new THREE.MeshPhongMaterial({color: 0x445566, shininess: 10})));
-            let panMat = new THREE.MeshPhongMaterial({color: 0x001133, side: THREE.DoubleSide, specular: 0x555555, shininess: 30});
-            let p1 = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.01,0.1), panMat); p1.position.x = 0.18;
-            let p2 = new THREE.Mesh(new THREE.BoxGeometry(0.3,0.01,0.1), panMat); p2.position.x = -0.18;
-            let light = new THREE.Mesh(new THREE.SphereGeometry(0.04), new THREE.MeshBasicMaterial({color: col})); light.position.y = 0.06;
-            grp.add(p1, p2, light);
-            return grp;
+            starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPts, 3));
+            let starMat = new THREE.PointsMaterial({color: 0xffffff, size: 2.5, transparent: true, opacity: 1}); 
+            starField = new THREE.Points(starGeo, starMat);
+            lScene.add(starField);
         }
 
-        function createOrbitPath(radius, color) {
+        // Mathematical conversion from physics (Alt/Downrange) to 3D Sphere Coordinates
+        function getSphericalPosition(altitudeKm, downrangeKm) {
+            // Scale: 1 unit = 1 km
+            let r = EARTH_RADIUS + altitudeKm;
+            let theta = downrangeKm / EARTH_RADIUS; // Angle in radians
+            
+            // Start at top of sphere (y = r, x = 0) and rotate along X-Y plane
+            return {
+                x: r * Math.sin(theta),
+                y: r * Math.cos(theta),
+                z: 0,
+                angle: theta
+            };
+        }
+
+        function drawOptimalPath() {
             let pts = [];
-            let visualRadius = radius * 3.5; 
-            for(let i=0; i<=128; i++) {
-                let a = (i/128) * Math.PI * 2;
-                pts.push(new THREE.Vector3(Math.cos(a)*visualRadius, 0, Math.sin(a)*visualRadius));
-            }
-            let geo = new THREE.BufferGeometry().setFromPoints(pts);
-            let mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.6, linewidth: 2 });
-            return new THREE.LineLoop(geo, mat);
-        }
-
-        function init3D() {
-            const cont = document.getElementById('three-canvas');
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(45, cont.clientWidth/cont.clientHeight, 0.1, 20000);
-            camera.position.set(0, 4, 8); camera.lookAt(0,0,0);
-
-            renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
-            renderer.setSize(cont.clientWidth, cont.clientHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            cont.appendChild(renderer.domElement);
-
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true; controls.dampingFactor = 0.05;
-            controls.minDistance = 3; controls.maxDistance = 20;
-
-            scene.add(new THREE.AmbientLight(0x112233));
-            let sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(10, 5, 10); scene.add(sun);
-            let rim = new THREE.DirectionalLight(0x00f0ff, 0.8); rim.position.set(-5, 0, -10); scene.add(rim);
-
-            const texLoader = new THREE.TextureLoader();
-            earthGrp = new THREE.Group();
-            let earthGeo = new THREE.SphereGeometry(1, 64, 64);
-            let earthMat = new THREE.MeshPhongMaterial({
-                map: texLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js/examples/textures/planets/earth_atmos_2048.jpg'),
-                specularMap: texLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js/examples/textures/planets/earth_specular_2048.jpg'),
-                specular: new THREE.Color(0x222222), shininess: 25
-            });
-            let earthMesh = new THREE.Mesh(earthGeo, earthMat);
-            
-            let cloudMat = new THREE.MeshPhongMaterial({
-                map: texLoader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js/examples/textures/planets/earth_clouds_1024.png'),
-                transparent: true, opacity: 0.4
-            });
-            let cloudMesh = new THREE.Mesh(new THREE.SphereGeometry(1.01, 64, 64), cloudMat);
-            
-            earthGrp.add(earthMesh, cloudMesh);
-            scene.add(earthGrp);
-
-            sat1 = buildSat(0x00f0ff); sat2 = buildSat(0xff2a2a);
-            scene.add(sat1, sat2);
-            updateOrbitLines(); 
-
-            window.addEventListener('resize', () => {
-                if(!cont.clientWidth) return;
-                camera.aspect = cont.clientWidth/cont.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(cont.clientWidth, cont.clientHeight);
-            });
-            animate3D();
-        }
-
-        function updateOrbitLines() {
-            if(orbitLine1) scene.remove(orbitLine1);
-            if(orbitLine2) scene.remove(orbitLine2);
-            let vr1 = 1 + (sys.alt1/R_E); let vr2 = 1 + (sys.alt2/R_E);
-            orbitLine1 = createOrbitPath(vr1, 0x00f0ff); orbitLine2 = createOrbitPath(vr2, 0xff2a2a);
-            scene.add(orbitLine1, orbitLine2);
-        }
-
-        function animate3D() {
-            requestAnimationFrame(animate3D);
-            earthGrp.rotation.y += 0.0002;
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        function update3D(r1, r2) {
-            if(!sat1) return;
-            let visualMult = 3.5;
-            let vr1 = (1 + (sys.alt1/R_E)) * visualMult;
-            let vr2 = (1 + (sys.alt2/R_E)) * visualMult;
-
-            let x1 = Math.cos(sys.angle1)*vr1, z1 = Math.sin(sys.angle1)*vr1;
-            let x2 = Math.cos(sys.angle2)*vr2, z2 = Math.sin(sys.angle2)*vr2;
-            
-            sat1.position.set(x1, 0, z1); 
-            sat2.position.set(x2, 0.1, z2); 
-            
-            sat1.lookAt(x1 - Math.sin(sys.angle1), 0, z1 + Math.cos(sys.angle1));
-            sat2.lookAt(x2 - Math.sin(sys.angle2), 0.1, z2 + Math.cos(sys.angle2));
-        }
-
-        // ==================================================================
-        // 4. CRT RADAR RENDERER (FIXED SCALING BUG)
-        // ==================================================================
-        let ctxR, rAng = 0;
-        function initRadar() {
-            const cvs = document.getElementById('radar-canvas');
-            ctxR = cvs.getContext('2d');
-            animateRadar();
-        }
-
-        function animateRadar() {
-            requestAnimationFrame(animateRadar);
-            const cont = document.getElementById('view-radar');
-            const cvs = document.getElementById('radar-canvas');
-            
-            // Dynamic resize check to fix the 0x0 Canvas hidden tab bug
-            if (cont.clientWidth > 0 && (cvs.width !== cont.clientWidth || cvs.height !== cont.clientHeight)) {
-                cvs.width = cont.clientWidth;
-                cvs.height = cont.clientHeight;
-            }
-            if (cvs.width === 0) return; // Skip drawing if hidden
-
-            const w = cvs.width, h = cvs.height;
-            const cx = w/2, cy = h/2, maxR = Math.min(cx, cy) - 40;
-
-            ctxR.fillStyle = 'rgba(2, 6, 13, 0.2)'; ctxR.fillRect(0,0,w,h);
-
-            ctxR.strokeStyle = 'rgba(0, 240, 255, 0.15)'; ctxR.lineWidth = 1; ctxR.setLineDash([5, 5]);
-            for(let i=1; i<=4; i++) { ctxR.beginPath(); ctxR.arc(cx,cy,(maxR/4)*i,0,Math.PI*2); ctxR.stroke(); }
-            ctxR.setLineDash([]);
-            ctxR.beginPath(); ctxR.moveTo(cx-maxR,cy); ctxR.lineTo(cx+maxR,cy); ctxR.stroke();
-            ctxR.beginPath(); ctxR.moveTo(cx,cy-maxR); ctxR.lineTo(cx,cy+maxR); ctxR.stroke();
-
-            rAng -= 0.04;
-            ctxR.save(); ctxR.translate(cx,cy); ctxR.rotate(rAng);
-            let grad = ctxR.createConicGradient(0,0,0);
-            grad.addColorStop(0, 'rgba(0, 240, 255, 0.5)'); grad.addColorStop(0.15, 'transparent');
-            ctxR.fillStyle = grad;
-            ctxR.beginPath(); ctxR.moveTo(0,0); ctxR.arc(0,0,maxR,0,Math.PI/4); ctxR.fill();
-            ctxR.restore();
-
-            function drawBlip(ang, isPrimary) {
-                let baseR = maxR * 0.6;
-                let altDiff = (sys.alt2 - sys.alt1) * 0.2;
-                let dist = isPrimary ? baseR : baseR + altDiff;
-                let tAng = -ang % (Math.PI*2); if(tAng<0) tAng+=Math.PI*2;
+            let optAlt = 0, optDownrange = 0, optVelX = 0, optVelY = 0, optPitch = Math.PI/2;
+            for(let t=0; t<600; t++) {
+                let thrust = t < 120 ? 32 : (t < 480 ? 14 : 0);
+                let tPitch = Math.PI/2;
+                if(optAlt > 500) { let turnFactor = Math.min(1, (optAlt - 500) / 120000); tPitch = (Math.PI/2) * (1 - turnFactor*0.85); }
+                optPitch += (tPitch - optPitch) * 0.04;
+                optVelX += (Math.cos(optPitch) * thrust) * 0.05;
+                optVelY += (Math.sin(optPitch) * thrust - 9.8) * 0.05;
+                optDownrange += optVelX * 0.05; optAlt += optVelY * 0.05;
                 
-                ctxR.beginPath();
-                let col = isPrimary ? '#00f0ff' : '#ff2a2a';
-                ctxR.fillStyle = col;
-                ctxR.shadowBlur = 15; ctxR.shadowColor = col;
-                ctxR.arc(cx + Math.cos(tAng)*dist, cy + Math.sin(tAng)*dist, 5, 0, Math.PI*2);
-                ctxR.fill(); ctxR.shadowBlur = 0;
+                if (t%5 === 0) {
+                    let pos = getSphericalPosition(optAlt / 1000, optDownrange / 1000);
+                    pts.push(new THREE.Vector3(pos.x, pos.y, pos.z));
+                }
             }
-            drawBlip(sys.angle1, true); drawBlip(sys.angle2, false);
+            optimalTrailGeo = new THREE.BufferGeometry().setFromPoints(pts);
+            let optMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.6, linewidth: 2, dashSize: 10, gapSize: 10 });
+            let line = new THREE.Line(optimalTrailGeo, optMat); line.computeLineDistances(); lScene.add(line);
+        }
+
+        function initLaunch3D() {
+            const cont = document.getElementById('launch-canvas');
+            
+            lRenderer = new THREE.WebGLRenderer({antialias: true, powerPreference: "high-performance"}); 
+            lRenderer.setSize(cont.clientWidth, cont.clientHeight); 
+            lRenderer.setPixelRatio(window.devicePixelRatio);
+            lRenderer.shadowMap.enabled = true;
+            lRenderer.outputEncoding = THREE.sRGBEncoding; 
+            lRenderer.toneMapping = THREE.ACESFilmicToneMapping; 
+            lRenderer.toneMappingExposure = 1.1;
+            cont.appendChild(lRenderer.domElement);
+
+            lScene = new THREE.Scene(); 
+            lScene.background = new THREE.Color(0x02060d); // Space background
+
+            lCamera = new THREE.PerspectiveCamera(50, cont.clientWidth/cont.clientHeight, 0.1, 100000); 
+            
+            lControls = new THREE.OrbitControls(lCamera, lRenderer.domElement); 
+            lControls.enableDamping = true; 
+
+            // LIGHTING
+            lScene.add(new THREE.AmbientLight(0x222233, 1.5)); 
+            let sunLight = new THREE.DirectionalLight(0xffffff, 2.5); 
+            sunLight.position.set(10000, 10000, 5000); 
+            sunLight.castShadow = true; 
+            lScene.add(sunLight);
+
+            createStars();
+
+            // --- MASSIVE SPHERICAL EARTH (The Graphic Upgrade) ---
+            const texLoader = new THREE.TextureLoader();
+            texLoader.setCrossOrigin('anonymous');
+            
+            // High-res CDN Earth
+            let earthMat = new THREE.MeshPhongMaterial({
+                map: texLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'),
+                specularMap: texLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png'),
+                specular: new THREE.Color(0x333333),
+                shininess: 15
+            });
+            
+            earthSphere = new THREE.Mesh(new THREE.SphereGeometry(EARTH_RADIUS, 128, 128), earthMat); 
+            earthSphere.position.set(0, 0, 0); // Center of universe
+            lScene.add(earthSphere);
+
+            // Atmospheric Glow ring
+            let atmosMat = new THREE.MeshBasicMaterial({color: 0x5a9bd4, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, side: THREE.BackSide});
+            let atmosSphere = new THREE.Mesh(new THREE.SphereGeometry(EARTH_RADIUS + 40, 128, 128), atmosMat);
+            lScene.add(atmosSphere);
+
+            // Ground Radar Station (Placed on surface at 0 downrange)
+            let radPos = getSphericalPosition(0, -2); // 2km behind pad
+            groundRadar = new THREE.Group();
+            let radarBase = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.2, 16), new THREE.MeshStandardMaterial({color: 0x111111}));
+            let radarDish = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16, 0, Math.PI*2, 0, Math.PI/2), new THREE.MeshStandardMaterial({color: 0xb300ff, wireframe: true}));
+            radarDish.position.y = 0.1; radarDish.rotation.x = -Math.PI/4;
+            groundRadar.add(radarBase, radarDish);
+            groundRadar.position.set(radPos.x, radPos.y, radPos.z); 
+            groundRadar.rotation.z = -radPos.angle; // Align to surface
+            lScene.add(groundRadar);
+
+            // SHUTTLE STACK
+            launchStack = new THREE.Group(); 
+            let startPos = getSphericalPosition(0, 0); // Surface at 0 downrange
+            launchStack.position.set(startPos.x, startPos.y, startPos.z);
+            lScene.add(launchStack);
+
+            const gltfLoader = new THREE.GLTFLoader();
+            gltfLoader.load('shuttle.glb', function(gltf) {
+                let realModel = gltf.scene;
+                const box = new THREE.Box3().setFromObject(realModel); const center = box.getCenter(new THREE.Vector3());
+                realModel.position.sub(center); const size = box.getSize(new THREE.Vector3()).length();
+                const targetScale = 2 / size; // Scaled to fit 1km=1unit Earth
+                realModel.scale.set(targetScale, targetScale, targetScale);
+                realModel.rotation.x = -Math.PI/2; 
+                launchStack.add(realModel); launchStack.userData.hasProcedural = false; 
+            }, undefined, function(e) {
+                let fallback = buildDetailedShuttle(); 
+                launchStack.add(fallback);
+                launchStack.userData.hasProcedural = true; launchStack.userData.srbL = fallback.userData.srbL; launchStack.userData.srbR = fallback.userData.srbR;
+            });
+
+            exhaustSRB = createExhaust(0xffeedd, 0.8, 2000); exhaustSRB.visible = false; lScene.add(exhaustSRB);
+            exhaustSSME = createExhaust(0x00d2ff, 0.5, 1000); exhaustSSME.visible = false; lScene.add(exhaustSSME);
+
+            engineLight = new THREE.PointLight(0xff8800, 0, 50); 
+            launchStack.add(engineLight);
+
+            drawOptimalPath(); 
+
+            launchTrailGeo = new THREE.BufferGeometry();
+            const trailMat = new THREE.LineBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 1.0, linewidth: 3 });
+            let launchTrail = new THREE.Line(launchTrailGeo, trailMat); lScene.add(launchTrail);
+
+            // Initial Camera Position
+            resetLaunch();
+
+            window.addEventListener('resize', () => { 
+                if(!cont.clientWidth) return; lCamera.aspect = cont.clientWidth/cont.clientHeight; 
+                lCamera.updateProjectionMatrix(); lRenderer.setSize(cont.clientWidth, cont.clientHeight); 
+            });
+            animateLaunch3D();
+        }
+
+        function triggerLaunch() {
+            if(lState.active) return;
+            lState.active = true; lState.lastTime = Date.now();
+            exhaustSRB.visible = true; exhaustSSME.visible = true;
+            engineLight.intensity = 5; 
+            document.getElementById('l-phase').innerText = "LIFTOFF - POWERED ASCENT"; document.getElementById('l-phase').style.color = "var(--green)";
+        }
+
+        function resetLaunch() {
+            lState = { active: false, alt: 0, downrange:0, vel: 0, velX:0, velY:0, pitch: Math.PI/2, time: 0, lastTime: Date.now(), dynQ: 0 };
+            
+            let startPos = getSphericalPosition(0, 0);
+            launchStack.position.set(startPos.x, startPos.y, startPos.z); 
+            launchStack.rotation.z = 0; // Point straight up relative to surface normal
+
+            if(launchStack.userData.hasProcedural) {
+                launchStack.userData.srbL.position.set(-1.2, 3, 0); launchStack.userData.srbR.position.set(1.2, 3, 0); 
+                launchStack.userData.srbL.rotation.z = 0; launchStack.userData.srbR.rotation.z = 0;
+            }
+            exhaustSRB.visible = false; exhaustSSME.visible = false; engineLight.intensity = 0;
+            launchTrailPts = []; if(launchTrailGeo) launchTrailGeo.setFromPoints(launchTrailPts);
+            
+            document.getElementById('l-phase').innerText = "T-MINUS 00:00:00"; document.getElementById('l-phase').style.color = "#fff";
+            document.getElementById('l-alt').innerText = "0.00 km"; document.getElementById('l-downrange').innerText = "0.00 km";
+            document.getElementById('l-vel').innerText = "0.00 m/s"; document.getElementById('l-pitch').innerText = "90.0 °"; document.getElementById('l-q').innerText = "0.00 kPa";
+            document.getElementById('l-range').innerText = "0.00 km"; document.getElementById('l-radvel').innerText = "0.00 m/s"; document.getElementById('l-doppler').innerText = "0.00 Hz"; document.getElementById('l-dev').innerText = "0.00 %";
+            
+            // Set camera on launchpad
+            lCamera.position.set(startPos.x, startPos.y + 2, startPos.z + 10); 
+            lControls.target.set(startPos.x, startPos.y + 2, startPos.z);
+            clearLaunchCharts();
+        }
+
+        function calcLaunchPhysics() {
+            if(!lState.active) return;
+            let now = Date.now(); let dt = (now - lState.lastTime) * 0.001; lState.lastTime = now;
+            if(dt <= 0) return; lState.time += dt;
+
+            let totalThrust = 0;
+            if(lState.time < 120) { totalThrust = 32; } 
+            else if (lState.time < 480) { totalThrust = 14; } 
+            else { totalThrust = 0; }
+
+            let targetPitch = Math.PI/2;
+            if(lState.alt > 500) {
+                let turnFactor = Math.min(1, (lState.alt - 500) / 120000);
+                targetPitch = (Math.PI/2) * (1 - turnFactor*0.85); 
+            }
+            lState.pitch += (targetPitch - lState.pitch) * 0.04;
+
+            let accelX = Math.cos(lState.pitch) * totalThrust;
+            let accelY = Math.sin(lState.pitch) * totalThrust - 9.8; 
+
+            lState.velX += accelX * dt; lState.velY += accelY * dt;
+            lState.vel = Math.sqrt(lState.velX*lState.velX + lState.velY*lState.velY);
+            lState.downrange += lState.velX * dt; lState.alt += lState.velY * dt;
+
+            let airDensity = Math.exp(-lState.alt / 8000); 
+            lState.dynQ = 0.5 * airDensity * (lState.vel * lState.vel) / 1000;
+
+            // GROUND DOPPLER MATH
+            let gsX = -2000, gsY = 0;
+            let dx = lState.downrange - gsX; let dy = lState.alt - gsY;
+            let distMeters = Math.sqrt(dx*dx + dy*dy);
+            let radVel = ((dx * lState.velX) + (dy * lState.velY)) / distMeters;
+            let doppler = (-2 * radVel * launchParams.f0) / c_speed;
+
+            // DOM Updates
+            document.getElementById('l-alt').innerText = (lState.alt / 1000).toFixed(2) + " km";
+            document.getElementById('l-downrange').innerText = (lState.downrange / 1000).toFixed(2) + " km";
+            document.getElementById('l-vel').innerText = lState.vel.toFixed(1) + " m/s";
+            document.getElementById('l-pitch').innerText = (lState.pitch * (180/Math.PI)).toFixed(1) + " °";
+            document.getElementById('l-q').innerText = lState.dynQ.toFixed(2) + " kPa";
+            
+            document.getElementById('l-range').innerText = (distMeters / 1000).toFixed(2) + " km";
+            document.getElementById('l-radvel').innerText = radVel.toFixed(2) + " m/s";
+            document.getElementById('l-doppler').innerText = doppler.toFixed(2) + " Hz";
+            let deviation = (Math.random() * 0.02); document.getElementById('l-dev').innerText = deviation.toFixed(3) + " %";
+
+            if(lState.time > 35 && lState.time < 65) { document.getElementById('l-phase').innerText = "MAX-Q (Max Dynamic Pressure)"; document.getElementById('l-phase').style.color = "var(--orange)"; } 
+            else if (lState.time > 120 && lState.time < 125) { document.getElementById('l-phase').innerText = "STAGING - DISCARDED 1ST STAGE"; document.getElementById('l-phase').style.color = "var(--red)"; exhaustSRB.visible = false; engineLight.color.setHex(0x00d2ff); engineLight.intensity = 2;} 
+            else if (lState.time > 125 && totalThrust > 0) { document.getElementById('l-phase').innerText = "UPPER STAGE BURN"; document.getElementById('l-phase').style.color = "var(--cyan)"; } 
+            else if (totalThrust === 0 && lState.alt > 100000) { document.getElementById('l-phase').innerText = "MECO - ORBIT INSERTION"; document.getElementById('l-phase').style.color = "var(--purple)"; exhaustSSME.visible = false; engineLight.intensity = 0;}
+
+            try { updateLaunchCharts(doppler, radVel, lState.alt/1000, lState.pitch * (180/Math.PI)); } catch(e){}
+        }
+        setInterval(calcLaunchPhysics, 50);
+
+        function animateExhaust(particles, sourceYOffset, spread, speed) {
+             let positions = particles.geometry.attributes.position.array;
+             let vacuumSpread = 1 + (lState.alt / 40000); 
+             
+             // Get world position of the exhaust nozzle relative to the shuttle's current rotation
+             let nozzleLocal = new THREE.Vector3(0, sourceYOffset, 0);
+             let nozzleWorld = nozzleLocal.applyMatrix4(launchStack.matrixWorld);
+
+             for(let i=0; i<positions.length/3; i++) {
+                 let idx = i*3;
+                 if(positions[idx+1] < EARTH_RADIUS || new THREE.Vector3(positions[idx], positions[idx+1], positions[idx+2]).distanceTo(nozzleWorld) > 10) {
+                     positions[idx] = nozzleWorld.x + (Math.random()-0.5)*spread;
+                     positions[idx+1] = nozzleWorld.y + (Math.random()-0.5)*spread; 
+                     positions[idx+2] = nozzleWorld.z + (Math.random()-0.5)*spread;
+                 } else {
+                     // Move opposite to velocity vector
+                     let fallX = -Math.cos(lState.pitch) * speed;
+                     let fallY = -Math.sin(lState.pitch) * speed;
+                     
+                     // Adjust for Earth curve visually
+                     positions[idx] += fallX;
+                     positions[idx+1] += fallY;
+                     
+                     positions[idx] += (Math.random()-0.5) * vacuumSpread; 
+                     positions[idx+2] += (Math.random()-0.5) * vacuumSpread; 
+                 }
+             }
+             particles.geometry.attributes.position.needsUpdate = true;
+        }
+
+        function animateLaunch3D() {
+            requestAnimationFrame(animateLaunch3D);
+            if(lState.active) {
+                // Map physics Alt/Downrange to actual Earth Sphere coordinates
+                let pos = getSphericalPosition(lState.alt / 1000, lState.downrange / 1000);
+                
+                launchStack.position.set(pos.x, pos.y, pos.z);
+                
+                // Rotate to match Earth surface curvature PLUS the physics pitch angle
+                launchStack.rotation.z = -pos.angle + (Math.PI/2 - lState.pitch);
+
+                if (Math.floor(lState.time * 20) % 5 === 0) {
+                    launchTrailPts.push(launchStack.position.clone());
+                    if (launchTrailPts.length > 800) launchTrailPts.shift(); 
+                    launchTrailGeo.setFromPoints(launchTrailPts);
+                }
+
+                // Cinematic Camera Follow along the curve
+                let camDist = 15 + (lState.alt / 2000); 
+                let camAngle = pos.angle - 0.001; // Slightly behind
+                
+                // Position camera relative to the sphere to look at the side profile
+                let camR = EARTH_RADIUS + (lState.alt / 1000) + 2;
+                let targetCamPos = new THREE.Vector3(
+                    camR * Math.sin(camAngle),
+                    camR * Math.cos(camAngle),
+                    camDist
+                );
+                
+                lCamera.position.lerp(targetCamPos, 0.05);
+                lControls.target.lerp(launchStack.position, 0.05);
+
+                if(lState.time > 120 && launchStack.userData.hasProcedural) { 
+                    launchStack.userData.srbL.position.y -= 0.05; launchStack.userData.srbL.rotation.z -= 0.02; 
+                    launchStack.userData.srbR.position.y -= 0.05; launchStack.userData.srbR.rotation.z += 0.02; 
+                }
+                
+                if(exhaustSRB.visible) animateExhaust(exhaustSRB, -2, 0.5, 0.5);
+                if(exhaustSSME.visible) animateExhaust(exhaustSSME, -1, 0.2, 0.6);
+
+                groundRadar.children[1].lookAt(launchStack.position);
+            }
+            lControls.update(); lRenderer.render(lScene, lCamera);
         }
 
         // ==================================================================
-        // 5. CHART.JS INTEGRATION (FIXED HIDDEN BUG)
+        // 4. CHART ENGINES (DOPPLER LAUNCH PLOTS)
         // ==================================================================
-        let charts = {};
-        let cDat = { t: [], dop: [], vel: [], acc: [], dist: [] };
+        let lCharts = {}; let lDat = { t: [], dop: [], vel: [], alt: [], pitch: [] };
 
-        function makeChart(id, label, col) {
+        function makeChart(id, label, col, dataObj) {
             return new Chart(document.getElementById(id).getContext('2d'), {
-                type: 'line',
-                data: { labels: cDat.t, datasets: [{ label: label, data: [], borderColor: col, backgroundColor: col+'22', fill: true, borderWidth: 2, tension: 0.2, pointRadius: 0 }] },
-                options: {
-                    responsive: true, maintainAspectRatio: false, 
-                    animation: { duration: 0 }, 
-                    scales: { 
-                        x: { display: false }, 
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6a8caf', font:{family:'Share Tech Mono', size:11}, maxTicksLimit: 6 } } 
-                    },
-                    plugins: { legend: { labels: { color: '#fff', font:{family:'Share Tech Mono'} } } }
-                }
+                type: 'line', data: { labels: dataObj.t, datasets: [{ label: label, data: [], borderColor: col, backgroundColor: col+'22', fill: true, borderWidth: 2, tension: 0.2, pointRadius: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, animation: { duration: 0 }, scales: { x: { display: false }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6a8caf', font:{family:'Share Tech Mono', size:11}, maxTicksLimit: 6 } } }, plugins: { legend: { labels: { color: '#fff', font:{family:'Share Tech Mono'} } } } }
             });
         }
 
         function initCharts() {
-            charts.dop = makeChart('chart-doppler', 'Doppler Shift (Hz)', '#00f0ff');
-            charts.vel = makeChart('chart-vel', 'Radial Velocity (m/s)', '#00ff41');
-            charts.acc = makeChart('chart-accel', 'Acceleration (m/s²)', '#ffaa00');
-            charts.dist = makeChart('chart-dist', 'Target Separation (km)', '#ff2a2a');
+            lCharts.dop = makeChart('l-chart-doppler', 'GS Doppler Shift (Hz)', '#00f0ff', lDat);
+            lCharts.vel = makeChart('l-chart-vel', 'GS Radial Velocity (m/s)', '#00ff41', lDat);
+            lCharts.alt = makeChart('l-chart-alt', 'Ascent Altitude (km)', '#b300ff', lDat);
+            lCharts.pitch = makeChart('l-chart-pitch', 'Trajectory Pitch Angle (°)', '#ffaa00', lDat);
         }
 
-        function clearCharts() { cDat = { t: [], dop: [], vel: [], acc: [], dist: [] }; }
-
-        function updateCharts(dist, dop, vel, acc) {
-            if(!charts.dop) return;
-            cDat.t.push(''); cDat.dop.push(dop); cDat.vel.push(vel); cDat.acc.push(acc); cDat.dist.push(dist);
-            if(cDat.t.length > 150) { cDat.t.shift(); cDat.dop.shift(); cDat.vel.shift(); cDat.acc.shift(); cDat.dist.shift(); }
-            
-            charts.dop.data.datasets[0].data = cDat.dop; charts.dop.update();
-            charts.vel.data.datasets[0].data = cDat.vel; charts.vel.update();
-            charts.acc.data.datasets[0].data = cDat.acc; charts.acc.update();
-            charts.dist.data.datasets[0].data = cDat.dist; charts.dist.update();
+        function updateLaunchCharts(dop, vel, alt, pitch) {
+            if(!lCharts.dop) return; lDat.t.push(''); lDat.dop.push(dop); lDat.vel.push(vel); lDat.alt.push(alt); lDat.pitch.push(pitch);
+            if(lDat.t.length > 150) { lDat.t.shift(); lDat.dop.shift(); lDat.vel.shift(); lDat.alt.shift(); lDat.pitch.shift(); }
+            lCharts.dop.data.datasets[0].data = lDat.dop; lCharts.dop.update(); lCharts.vel.data.datasets[0].data = lDat.vel; lCharts.vel.update();
+            lCharts.alt.data.datasets[0].data = lDat.alt; lCharts.alt.update(); lCharts.pitch.data.datasets[0].data = lDat.pitch; lCharts.pitch.update();
         }
 
-        // Initialize All
-        window.onload = () => {
-            init3D(); initRadar(); initCharts();
-        };
+        window.onload = () => { initLaunch3D(); initCharts(); };
     </script>
 </body>
 </html>
